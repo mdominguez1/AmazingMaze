@@ -5,7 +5,14 @@
  */
 /**Various different variables needed**/
 var scene, camera, renderer, canvasHeight, canvasWidth, aspRat,
-    viewLength;
+    viewLength, raycaster, controlsEnabled;
+
+/** Controls **/
+var moveForward = false;
+var moveBackward = false;
+var moveLeft = false;
+var moveRight = false;
+var lookUp = false;
 
 init();
 draw();
@@ -31,7 +38,12 @@ function init(){
 
     viewLength = 500;
     aspRat = canvasWidth/canvasHeight;
-    document.addEventListener("keydown", onDocumentKeyDown);
+
+    document.addEventListener("keydown", onKeyDown, false);
+    document.addEventListener("keyup", onKeyUp, false);
+
+    raycaster = new THREE.RAycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 10);
+
     camera = setCamera();
     scene.add(camera);
     draw();
@@ -61,6 +73,7 @@ function draw(){
     drawBox();
 }//end draw()
 
+
 /**
  * Renders the scene
  */
@@ -83,17 +96,96 @@ function drawFloor(){
 /**
  * Event handler for key down events in the scene
  *  0(48/96) puts the camera back to its initial state
- *  1(49/97) puts the cmaera above the maze to look at the maze
+ *  
+ *
  */
-function onDocumentKeyDown(event){
+function onKeyDown(event){
     
     //keyboard events
-    if(event.keyCode == 48 || event.keyCode == 96){
-        console.log('0');
-    }if(event.keyCode == 49 || event.keyCode == 97){
-        console.log('1');
+    switch(event.keyCode){
+        case 48:
+        case 96:
+            lookUp = true;
+            break;
+        case 38: //up
+        case 87: //w
+            moveForward = true;
+            break;
+        case 37: //left
+        case 65: //a
+            moveLeft = true;
+            break;
+        case 40: //down 
+        case 83: //s
+            moveBackward = true;
+            break;
+        case 39: //right
+        case 68: //d
+            moveRight = true;
+            break;
+    }//end switch
+}//end onKeyDown()
+
+/**
+ * Stops any events where keys are no longer being pressed
+ */
+function onKeyUp(event){
+    
+    //keyboard events
+    switch(event.keyCode){
+        case 48:
+        case 96:
+            lookUp = false;
+            break;
+        case 38: //up
+        case 87: //w
+            moveForward = false;
+            break;
+        case 37: //left
+        case 65: //a
+            moveLeft = false;
+            break;
+        case 40: //down 
+        case 83: //s
+            moveBackward = false;
+            break;
+        case 39: //right
+        case 68: //d
+            moveRight = false;
+            break;
+    }//end switch
+}//end onKeyUp
+
+function animate(){
+    requestAnimaionFrame(animate);
+
+    if(controlsEnabled){
+        raycaster.ray.origin.cop(controls.getObject().position);
+        raycaster.ray.origin.y -= 10;
+
+        var intersections = raycaster.intersectObjects(objects);
+
+        var isOnObject = intersections.length > 0;
+
+        var time = performance.now();
+        var delta = (time - prevTime) / 1000;
+
+        velocity.x -= velocity.x * 10.0 * delta;
+        velocity.z -= velocity.z * 10.0 * delta;
+
+        velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+
+        if(moveForward) velocity.z -= 400.0 * delta;
+        if(moveBackward) velocity.z += 400.0 * delta;
+
+        if(moveLeft) velocity.x -= 400.0 * delta;
+        if(moveRight) velocity.x += 400.0 * delta;
+
+        if(isOnObject == true){
+            velocity.y = Math.max(0, velocity.y);
+        }
     }
-}//end onDocumentKeyDown
+}
 
 /**
  *
