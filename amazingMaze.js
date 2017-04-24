@@ -42,9 +42,9 @@ function init(){
     document.addEventListener("keydown", onKeyDown, false);
     document.addEventListener("keyup", onKeyUp, false);
 
-    raycaster = new THREE.RAycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 10);
+    raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 10);
 
-    camera = setCamera();
+    camera = setPerspective();
     scene.add(camera);
     draw();
 }//end init()
@@ -191,7 +191,7 @@ function animate(){
  *
  */
 function drawBox(){
-    var boxGeo = new THREE.BoxBufferGeometry = new THREE.BoxBufferGeometry(200, 200, 200);
+    var boxGeo = new THREE.BoxBufferGeometry(200, 200, 200);
     var boxMaterial = new THREE.MeshBasicMaterial({color:0xff0000, side: THREE.DoubleSide});
     var box = new THREE.Mesh(boxGeo, boxMaterial);
 
