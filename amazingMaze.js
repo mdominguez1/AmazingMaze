@@ -5,18 +5,77 @@
  */
 /**Various different variables needed**/
 var scene, camera, renderer, canvasHeight, canvasWidth, aspRat,
-    viewLength, raycaster, controlsEnabled;
+    viewLength, raycaster, controlsEnabled, controls;
 
-/** Controls **/
+var objects = [];
+
+var raycaster;
+
+var blocker = document.getElementById('blocker');
+var instructions = document.getElementById('instructions');
+
+var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document ||
+                        'webkitPointerLockElement' in document;
+
+if(havePointerLock){
+    var element = document.body;
+
+    var pointerlockchange = function(event){
+        if(document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element){
+            controlsEnabled = true;
+            controls.enabled = true;
+
+            blocker.style.display = 'none';
+        }else{
+            controls.enabled = false;
+
+            blocker.style.display = '-webkit-box';
+            blocker.style.display = '-moz-box';
+            blocker.style.display = 'box';
+
+            instructions.style.display = '';
+        }
+    };
+
+    var pointerlockerror = function(event){
+        instructions.style.display = '';
+    };
+
+    //Hook pointer lock state change events
+    document.addEventListener('pointerlockchange', pointerlockchange, false);
+    document.addEventListener('mozpointerlockchange', pointerlockchange, false);
+    document.addEventListener('webkitpointerlockchange', pointerlockchange, false);
+        
+    document.addEventListener('pointerlockerror', pointerlockerror, false);
+    document.addEventListener('mozpointerlockerror', pointerlockerror, false);
+    document.addEventListener('webkitpointerlockerror', pointerlockerror, false);
+
+    instructions.addEventListener('click', function(event){
+        instructions.style.display = 'none';
+
+        //Ask the browser to lock the pointer
+        element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+        element.requestPointerLock();
+     }, false);
+
+
+    }else{
+        instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
+    }
+
+init();
+renderScene();
+animate();
+
 var moveForward = false;
 var moveBackward = false;
 var moveLeft = false;
 var moveRight = false;
-var lookUp = false;
+var lookUp = false; 
 
-init();
-draw();
-renderScene();
+var prevTime = performance.now();
+var velocity = new THREE.Vector3();
+
 
 /**
  * Sets the window color, the canvas width and height, creates a new scene and
@@ -27,12 +86,14 @@ function init(){
     
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setClearColor(0xffffff, 1);
+    renderer.setPixelRatio(window.devicePixelRatio);
 
     canvasWidth = window.innerWidth;
     canvasHeight = window.innerHeight;
 
     renderer.setSize(canvasWidth, canvasHeight);
     document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
+    window.addEventListener('resize', onWindowResize, false);
 
     scene = new THREE.Scene();
 
@@ -45,10 +106,22 @@ function init(){
     raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 10);
 
     camera = setPerspective();
-    scene.add(camera);
+
+    controls = new THREE.PointerLockControls(camera);
+    if(controls == null){
+        console.log("oops");
+    }
+    scene.add(controls.getObject());
     draw();
 }//end init()
 
+function onWindowResize(){
+    camera.aspect = canvasWidth/ canvasHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(canvasWidth, canvasHeight);
+    renderScene();
+}
 /**
  * Returns the camera to its initial position when the scene is first loaded
  */
@@ -61,10 +134,12 @@ function setCamera(){
 }//end setCamera()
 
 function setPerspective(){
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+    cameraTemp = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 
-    controls = new THREE.PointerLockControls(camera);
+    controls = new THREE.PointerLockControls(cameraTemp);
+    return cameraTemp;
 }//end setPerspective()
+
 /**
  * Draws the material in the scenes 
  */
@@ -109,6 +184,7 @@ function onKeyDown(event){
             break;
         case 38: //up
         case 87: //w
+            console.log('w');
             moveForward = true;
             break;
         case 37: //left
@@ -139,6 +215,7 @@ function onKeyUp(event){
             break;
         case 38: //up
         case 87: //w
+            console.log('w');
             moveForward = false;
             break;
         case 37: //left
@@ -157,10 +234,10 @@ function onKeyUp(event){
 }//end onKeyUp
 
 function animate(){
-    requestAnimaionFrame(animate);
-
+    requestAnimationFrame(animate);
+    
     if(controlsEnabled){
-        raycaster.ray.origin.cop(controls.getObject().position);
+        raycaster.ray.origin.copy(controls.getObject().position);
         raycaster.ray.origin.y -= 10;
 
         var intersections = raycaster.intersectObjects(objects);
@@ -182,10 +259,18 @@ function animate(){
         if(moveRight) velocity.x += 400.0 * delta;
 
         if(isOnObject == true){
-            velocity.y = Math.max(0, velocity.y);
-        }
-    }
-}
+            //velocity.y = Math.max(0, velocity.y);
+            //velocity.z = Math.max(0,velocity.z);
+            //velocity.x = Math.max(0, velocity.x);
+        }//end if
+
+        controls.getObject().translateX(velocity.x * delta);
+        controls.getObject().translateY(velocity.y * delta);
+        controls.getObject().translateZ(velocity.z * delta);
+
+        prevTime = time;
+    }//end if 
+}//end animate()
 
 /**
  *
@@ -196,5 +281,6 @@ function drawBox(){
     var box = new THREE.Mesh(boxGeo, boxMaterial);
 
     box.position.set(100, 0, 100);
+    objects.push(box);
     scene.add(box);
 }//end drawBox()
