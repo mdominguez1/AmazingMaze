@@ -652,6 +652,8 @@ function animate(){
         prevTime = time;
     }//end if 
 
-    renderer.render(scene, camera);
+    renderScene();
 
 }//end animate()
+
+function renderScene();
