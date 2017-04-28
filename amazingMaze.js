@@ -144,9 +144,12 @@ function init() {
 }
 
 function draw(){
-    //drawFloor();
-    drawBoxes();
     buildGround();
+    buildWalls(1);
+    makeCeiling();
+    makeLights();
+    //drawFloor();
+    //drawBoxes();
 }//end draw()
 
 /**
@@ -317,3 +320,209 @@ function buildGround(){
     scene.add(plane);
 }//end buildGround()
 
+/**
+ * Makes the ceiling for the dungeon view
+ */
+function makeCeiling(){
+    var geom = new THREE.PlaneGeometry(600, 600);
+    plane2 = new THREE.Mesh(geom, matGroundRoom);
+
+    var front = plane2.clone();
+    var back= plane2.clone();
+    var left = plane2.clone();
+    var right = plane2.clone();
+
+    plane2.rotation.x = Math.PI/2;
+    plane2.position.y = 51;
+
+    left.position.z = 300;
+    right.position.z = -300;
+    front.rotation.y = Math.PI/2;
+    front.position.x = 300;
+    back.rotation.y = Math.PI/2;
+    back.position.x = -300;
+
+    room.push(plane2);
+    room.push(front);
+    room.push(back);
+    room.push(left);
+    room.push(right);
+
+    for(var i = 0; i < room.length; i++){
+        room[i].visible = false;
+        scene.add(room[i]);
+    }//end for
+
+}//end makeCeiling
+
+/**
+ * Builds the walls for the maze
+ * @param type - The different scenes determine the type of walls
+ */
+function buildWalls(type){
+    var width = 10;
+    
+    var wall1 = makeWalls(130, 50, width, type);
+    wall1.position.z = -85;
+    walls.push(wall1);
+    
+    var wall2 = makeWalls(width, 50, 180, type);
+    wall2.position.x = 60;
+    walls.push(wall2);
+    
+    var wall3 = makeWalls(100, 50, width, type);
+    wall3.position.z = 95;
+    wall3.position.x = 15;
+    walls.push(wall3);
+    
+    var wall4 = makeWalls(width, 50, 160, type);
+    wall4.position.x = -60;
+    wall4.position.z = 20;
+    walls.push(wall4);
+    
+    var wall5 = makeWalls(width, 50, 60, type);
+    wall5.position.x = 30;
+    wall5.position.z = -55;
+    walls.push(wall5);
+    
+    var wall6 = makeWalls(70, 50, width, type);
+    wall6.position.x = -30;
+    wall6.position.z = -55;
+    walls.push(wall6);
+    
+    var wall7 = makeWalls(width, 50, 30, type);
+    wall7.position.z = -40;
+    walls.push(wall7);
+    
+    var wall8 = makeWalls(width, 50, 30, type);
+    wall8.position.x = -30;
+    wall8.position.z = -10;
+    walls.push(wall8);
+    
+    var wall9 = makeWalls(100, 50, width, type);
+    wall9.position.x = 15;
+    walls.push(wall9);
+    
+    var wall10 = makeWalls(100, 50, width, type);
+    wall10.position.z = 30;
+    wall10.position.x = -15;
+    walls.push(wall10);
+    
+    var wall11 = makeWalls(70, 50, width, type);
+    wall11.position.z = 60;
+    walls.push(wall11);
+    
+    var wall12 = makeWalls(width, 50, 40, type);
+    wall12.position.z = 75;
+    wall12.position.x = -30;
+    walls.push(wall12);
+    
+    
+    for(var i = 0; i<walls.length; i++){
+        objects.push(walls[i]);
+		scene.add(walls[i]);
+    }//end for
+	
+}//end buildWalls()
+
+/**
+ * Helper method to make all the walls
+ */
+function makeWalls(length, width, height, type){
+    
+	var geometry = new THREE.BoxGeometry( length, width, height );
+    var cube = new THREE.Mesh( geometry, material);
+    if(type == 1){
+        cube.material = matWallGreen;
+    }
+    if(type == 2){
+       cube.material = matWallRoom;     
+    }
+	cube.castShadow = true;
+    cube.position.y = width/2;
+	return cube;
+    
+}//end makeWalls()
+
+/**
+ * Make lights for the maze
+ */
+function makeLights(){
+    
+    var light = new THREE.PointLight( 0x550000, 3, 100 ,2);
+    light.position.set( -60, 30, -78);
+    lights.push(light);
+	
+	var light2 = light.clone();
+	light2.position.set(-60, 30, -62);
+	lights.push(light2);
+	
+	var light3 = light.clone();
+	light3.position.set(7, 30, -30);
+	lights.push(light3);
+	
+	var light4 = light.clone();
+	light4.position.set(23, 30, -30);
+	lights.push(light4);
+	
+	var light5 = light.clone();
+	light5.position.set(40, 30, -78);
+	lights.push(light5);
+	
+	var light6 = light.clone();
+	light6.position.set(50, 30, -78);
+	lights.push(light6);
+	
+	var light7 = light.clone();
+	light7.position.set(-53, 30, -10);
+	lights.push(light7);
+	
+	var light8 = light.clone();
+	light8.position.set(-37, 30, -10);
+	lights.push(light8);
+	
+	var light9 = light.clone();
+	light9.position.set(0, 30, 7);
+	lights.push(light9);
+	
+	var light10 = light.clone();
+	light10.position.set(0, 30, 22);
+	lights.push(light10);
+	
+	var light11 = light.clone();
+	light11.position.set(30, 30, 37);
+	lights.push(light11);
+	
+	var light12 = light.clone();
+	light12.position.set(30, 30, 53);
+	lights.push(light12);
+	
+	var light13 = light.clone();
+	light13.position.set(35, 30, 60);
+	lights.push(light13);
+	
+	var light14 = light.clone();
+	light14.position.set(53, 30, 60);
+	lights.push(light14);
+	
+	var light15 = light.clone();
+	light15.position.set(-30, 30, 37);
+	lights.push(light15);
+	
+	var light16 = light.clone();
+	light16.position.set(-30, 30, 53);
+	lights.push(light16);
+	
+	var light17 = light.clone();
+	light17.position.set(-53, 30, 90);
+	lights.push(light17);
+	
+	var light18 = light.clone();
+	light18.position.set(-37, 30, 90);
+	lights.push(light18);
+	
+	for(var i = 0; i<lights.length; i++){
+		scene.add( lights[i] );
+		lights[i].intensity = 0;
+	}//end for
+}//end makeLights()
