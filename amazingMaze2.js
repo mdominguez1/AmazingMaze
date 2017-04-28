@@ -12,7 +12,9 @@ var raycaster;
 //empty object
 var pivot = new THREE.Object3D();
 
-var matWallGreen, matWallRoom, matGroundGreen, matGroundRoom;
+var matWallGreen, matWallRoom,
+matGroundGreen, matGroundRoom, material;
+
 
 var walls = [];
 var plane, plane2;
@@ -204,8 +206,31 @@ function onKeyDown(event){
                 velocity.y += 350;
             canJump = false;
             break;
+        case 97: //Sets to Hedge Maze
+        case 49: //1
+            plane.material = matGroundGreen;
+            for(var i = 0; i < walls.length; i++)
+                walls[i].material.color.setHex(0x228822);
+            for(var k = 0; k < room.length; k++)
+                room[k].visible = false;
+            check = true;
+            for(var l = 0; l < lights.length; l++)
+                lights[l].intensity = 0;
+            break;
+        case 98: //Sets to Dungeon Maze
+        case 50: //2
+            plane.material = matGroundRoom;
+            for(var j = 0; j < walls.length; j++)
+                walls[j].material.color.setHex(0x777777);
+            for(var m = 0; m < room.length; m++)
+                room[m].visible = true;
+            check = true;
+            for(var n = 0; n < lights.length; n++)
+                lights[n].intensity = 3;
+            break;
 
-    }
+    }//end switch
+
 }//end onKeyDown
 
 /**
@@ -235,6 +260,10 @@ function onKeyUp(event){
             camera = setPerspective();
             break;
     }//end switch
+
+    if(check){
+        plane2.visible = true;
+    }//end if
 
 }//end onKeyUp()
 
@@ -288,7 +317,7 @@ function makeCeiling(){
     var left = plane2.clone();
     var right = plane2.clone();
 
-    plane2.roation.x = Math.PI/2;
+    plane2.rotation.x = Math.PI/2;
     plane2.position.y = 51;
 
     left.position.z = 300;
@@ -311,6 +340,9 @@ function makeCeiling(){
 
 }//end makeCeiling()
 
+/**
+ * Make lights for the maze
+ */
 function makeLights(){
     
     var light = new THREE.PointLight( 0x550000, 3, 100 ,2);
@@ -391,6 +423,9 @@ function makeLights(){
 	}//end for
 }//end makeLights()
 
+/**
+ * Makes the ground for the maze
+ */
 function buildGround(){
     
     var geom = new THREE.PlaneGeometry(600,600); 
@@ -400,6 +435,10 @@ function buildGround(){
     
 }//end buildGround()
 
+/**
+ * Builds the walls for the maze
+ * @param type - The different scenes determine the type of walls
+ */
 function buildWalls(type){
     var width = 10;
     
@@ -460,11 +499,15 @@ function buildWalls(type){
     
     
     for(var i = 0; i<walls.length; i++){
+        objects.push(walls[i]);
 		scene.add(walls[i]);
     }//end for
 	
 }//end buildWalls()
 
+/**
+ * Helper method to make all the walls
+ */
 function makeWalls(length, width, height, type){
     
 	var geometry = new THREE.BoxGeometry( length, width, height );
@@ -514,6 +557,9 @@ function drawFloor(){
 
 }//end drawFloor()
 
+/**
+ * Draws boxes in random position for the scene
+ */
 function drawBoxes(){
 
     var geometry = new THREE.BoxGeometry(20, 20, 20);
