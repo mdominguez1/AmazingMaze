@@ -18,7 +18,9 @@ var objects = [];
 var raycaster;
 
 //Material for different scenes
-var matWallGreen, matWallRoom, matGroundGreen, matGroundRoom;
+var matWallGreen, matWallRoom;
+var matGroundGreen;
+var matGroundRoom;
 
 var walls = [];
 var plane, plane2;
@@ -127,7 +129,7 @@ function init() {
     matWallGreen = new THREE.MeshPhongMaterial({color: 0x228822});
     matWallRoom = new THREE.MeshPhongMaterial({color: 0x777777});
     matGroundRoom = new THREE.MeshBasicMaterial({color: 0x999999, side: THREE.DoubleSide});
-    matGroundGreen = new THREE.MeshBasicMAterial({color: 0x33cc33, side: THREE.DoubleSide});
+    matGroundGreen = new THREE.MeshBasicMaterial({color: 0x33cc33, side: THREE.DoubleSide});
 
     var geometry = new THREE.SphereGeometry(5, 32, 32); 
     var materialSphere = new THREE.MeshPhongMaterial({color: 0x00ffff});
@@ -223,6 +225,7 @@ function setOrthographic(){
 }//end setOrthographic()
 
 function onKeyDown(event) {
+
     //keyboard events
 	switch(event.keyCode){
 		case 38: // up
@@ -247,7 +250,30 @@ function onKeyDown(event) {
                 velocity.y += 350;
 			canJump = false;
 			break;
+        case 97: //Sets to Hedge Maze
+        case 49: //1
+            plane.material = matGroundGreen;
+            for(var i = 0; i < walls.length; i++)
+                walls[i].material.color.setHex(0x228822);
+            for(var k = 0; k < room.length; k++)
+                room[k].visible = false;
+            check = false;
+            for(var l = 0; l < lights.length; l++)
+                lights[l].intensity = 0;
+            break;
+        case 98: //Sets to Dungeon Maze
+        case 50: //2
+            plane.material = matGroundRoom;
+            for(var j = 0; j < walls.length; j++)
+                walls[j].material.color.setHex(0x777777)
+            for(var m = 0; m < room.length; m++)
+                room[m].visible = true;
+            check = true;
+            for(var n = 0; n < lights.length; n++)
+                lights[n].intensity = 3;
+            break;
 	}//end switch
+
 }//end onKeyDown(event)
 
 function onKeyUp(event){
@@ -270,11 +296,18 @@ function onKeyUp(event){
 			break;
         case 32: //space
             camera = pcamera;
+            if(check)
+                plane2.visible = true;
             break;
 	}//end switch
 }//end onKeyUp
 
 function onWindowResize() {
+    canvasWidth = window.innerWidth;
+    canvasHeight = window.innerHeight;
+    aspRat = canvasWidth/canvasHeight;
+    ocamera = setOrthographic();
+
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize( window.innerWidth, window.innerHeight );
